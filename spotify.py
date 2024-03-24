@@ -44,7 +44,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content.startswith('!query'):
-        # Aggregate and fetch the top 3 most appearing songs from the database
+        # Aggregate and fetch the top 20 most appearing songs from the database
         pipeline = [
             {
                 "$group": {
@@ -60,14 +60,14 @@ async def on_message(message):
                 "$sort": {"count": -1}
             },
             {
-                "$limit": 50
+                "$limit": 20
             }
         ]
 
         top_songs = list(collection.aggregate(pipeline))
 
-        # Create an embed to list the top 3 most appearing songs
-        embed = discord.Embed(title="Top 3 Most Appearing Songs", color=discord.Color.blue())
+        # Create an embed to list the top 20 most appearing songs
+        embed = discord.Embed(title="Top 20 Most Appearing Songs", color=discord.Color.blue())
 
         for idx, song in enumerate(top_songs, 1):
             embed.add_field(
