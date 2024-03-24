@@ -69,4 +69,4 @@ async def on_ready():
     client.loop.create_task(update_presence_data())
 
 # Start the bot
-client.run('MTIyMDkwMzY2ODQzNDYwMDAxOA.GVteBK.xr9rqdszU62_HlV6T9l7WbFevtR3kcZhZ_KRl8')
+client.run('PUT_YOUR_TOKEN_HERE')
