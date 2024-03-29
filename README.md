@@ -17,7 +17,7 @@ Before setting up the bot, make sure you have the following:
 Clone this repository to your local machine using the following command:
 
 ```
-git clone [https://github.com/your-repository-url.git](https://github.com/Josephfallen/Spotify_Scout/tree/main)
+git clone https://github.com/Josephfallen/Spotify_Scout.git
 ```
 
 ### 2. Install Dependencies
@@ -25,7 +25,7 @@ git clone [https://github.com/your-repository-url.git](https://github.com/Joseph
 Navigate to the cloned directory and install the required Python packages using pip:
 
 ```
-cd discord-spotify-presence-bot
+cd Spotify_Scout
 pip install -r requirements.txt
 ```
 
