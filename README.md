@@ -70,7 +70,7 @@ client.run('YOUR_TOKEN_HERE')
 Execute the following command to run the bot:
 
 ```
-python main.py
+python spotify.py
 ```
 
 ## Bot Commands
