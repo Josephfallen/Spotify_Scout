@@ -87,6 +87,9 @@ python spotify.py
 
 If you would like to contribute to this project, please fork the repository and submit a pull request. We welcome any contributions!
 
+## Support
+Go here [Support server](https://discord.gg/6y2hyz9uSk) to get support
+
 ## License
 
 This project is licensed under the MIT License. See `LICENSE` for more information.
