@@ -88,7 +88,7 @@ python spotify.py
 If you would like to contribute to this project, please fork the repository and submit a pull request. We welcome any contributions!
 
 ## Support
-Go here [Support server](https://discord.gg/6y2hyz9uSk) to get support
+Go to the [Support server](https://discord.gg/6y2hyz9uSk) to ask questions, talk to other developers, or if you need any help!
 
 ## License
 
