@@ -14,9 +14,9 @@ intents.presences = True
 client = commands.Bot(command_prefix='!', intents=intents)
 
 # MongoDB configuration
-mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = mongo_client["spotify"]
-collection = db["presences"]
+mongo_client = pymongo.MongoClient("mongodb://localhost:27017/") # Change if connecting to a remote mongoDB server
+db = mongo_client["YOUR_DATABASE_HERE"] # Name this what ever you would like, the bot will auto make the database
+collection = db["YOUR_COLLECTION_HERE"] # Name this what ever you would like, the bot will auto make the collection
 
 # Dictionary to store the last track_id for each member
 last_track_ids = {}
@@ -79,7 +79,7 @@ async def on_message(message):
         # Send the embed to the Discord channel
         await message.channel.send(embed=embed)
 
-    print('Discord queried top 3 most appearing songs from the database')
+    print('Discord queried top 20 most appearing songs from the database')
 
 async def insert_user_data(user, activity):
     details = activity.details
@@ -139,4 +139,4 @@ async def update_presence_data():
         await asyncio.sleep(10)  # Wait for 10 seconds before the next update
 
 # Start the bot
-client.run('')
+client.run('YOUR_TOKEN_HERE')
