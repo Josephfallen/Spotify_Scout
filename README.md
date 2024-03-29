@@ -17,7 +17,7 @@ Before setting up the bot, make sure you have the following:
 Clone this repository to your local machine using the following command:
 
 ```
-git clone https://github.com/your-repository-url.git
+git clone [https://github.com/your-repository-url.git](https://github.com/Josephfallen/Spotify_Scout/tree/main)
 ```
 
 ### 2. Install Dependencies
