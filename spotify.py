@@ -2,6 +2,11 @@ import discord
 from discord.ext import commands
 import pymongo
 import asyncio
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Discord bot configuration
 intents = discord.Intents.default()
@@ -13,12 +18,12 @@ intents.presences = True
 
 client = commands.Bot(command_prefix='!', intents=intents)
 
-# MongoDB configuration for primary Database
-mongo_client = pymongo.MongoClient("mongodb://localhost:27017/") # Change if connecting to a remote mongoDB server
-db = mongo_client["YOUR_DATABASE_HERE"] # Name this what ever you would like, the bot will auto make the database
-collection = db["YOUR_COLLECTION_HERE"] # Name this what ever you would like, the bot will auto make the collection
+# MongoDB configuration for collection1
+mongo_client1 = pymongo.MongoClient("mongodb://localhost:27017/")  # Change if connecting to a remote MongoDB server
+db1 = mongo_client1["DATABASE_NAME_1"]  # Replace with your database name for collection1
+collection1 = db1["COLLECTION_NAME_1"]  # Replace with your collection name for collection1
 
-# MongoDB configuration for Second Database (this is for a the webserver, remove if not wanted (Webserver WIP)
+# MongoDB configuration for collection2
 mongo_client2 = pymongo.MongoClient("mongodb://localhost:27017/")  # Change if connecting to a remote MongoDB server
 db2 = mongo_client2["DATABASE_NAME_2"]  # Replace with your database name for collection2
 collection2 = db2["COLLECTION_NAME_2"]  # Replace with your collection name for collection2
@@ -28,14 +33,14 @@ last_track_ids = {}
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user.name} ({client.user.id})')
+    logger.info(f'Logged in as {client.user.name} ({client.user.id})')
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name='Spotify'))
 
     # Create the task for updating presence data
     client.loop.create_task(update_presence_data())
 
     # Fetch presence data from all members
-    print("Fetching presence data from all members...")
+    logger.info("Fetching presence data from all members...")
     for guild in client.guilds:
         for member in guild.members:
             if any(
@@ -44,13 +49,15 @@ async def on_ready():
             ):
                 await handle_presence_update(member)
 
-    print('Ready to query!')
+    logger.info('Ready to query!')
 
 @client.event
 async def on_message(message):
     if message.content.startswith('!query'):
-        # Aggregate and fetch the top 20 most appearing songs from the database
-        pipeline = [
+        logger.info('Query command received')
+
+        # Aggregate and fetch the top 20 most appearing songs from collection1
+        pipeline1 = [
             {
                 "$group": {
                     "_id": {
@@ -69,22 +76,39 @@ async def on_message(message):
             }
         ]
 
-        top_songs = list(collection.aggregate(pipeline))
+        top_songs1 = list(collection1.aggregate(pipeline1))
+        logger.info(f"Fetched top songs from collection1: {top_songs1}")
 
-        # Create an embed to list the top 20 most appearing songs
-        embed = discord.Embed(title="Top 20 Most Appearing Songs", color=discord.Color.blue())
+        # Aggregate and fetch the top 20 most appearing songs from collection2
+        pipeline2 = [
+            {
+                "$group": {
+                    "_id": {
+                        "track_url": "$track_url",
+                        "title": "$title",
+                        "artist": "$artist"
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$sort": {"count": -1}
+            },
+            {
+                "$limit": 20
+            }
+        ]
 
-        for idx, song in enumerate(top_songs, 1):
-            embed.add_field(
-                name=f"{idx}. {song['_id']['title']} - {song['_id']['artist']}",
-                value=f"Track URL: {song['_id']['track_url']}\nAppearances: {song['count']}",
-                inline=False
-            )
+        top_songs2 = list(collection2.aggregate(pipeline2))
+        logger.info(f"Fetched top songs from collection2: {top_songs2}")
 
-        # Send the embed to the Discord channel
-        await message.channel.send(embed=embed)
+        # Create embeds for both collections
+        embed1 = create_embed("Top 20 Most Appearing Songs in Collection1", top_songs1)
+        embed2 = create_embed("Top 20 Most Appearing Songs in Collection2", top_songs2)
 
-    print('Discord queried top 20 most appearing songs from the database')
+        # Send embeds to the Discord channel
+        await message.channel.send(embed=embed1)
+        await message.channel.send(embed=embed2)
 
 async def insert_user_data(user, activity):
     details = activity.details
@@ -95,7 +119,10 @@ async def insert_user_data(user, activity):
         'title': details.split(" - ")[0] if details and "spotify" in details and " - " in details else None,
         'artist': details.split(" - ")[1] if details and "spotify" in details and " - " in details else None
     }
-    collection.insert_one(user_data)
+    
+    collection1.insert_one(user_data)
+    collection2.insert_one(user_data)
+    logger.info(f"Inserted user data: {user_data}")
 
 async def handle_presence_update(member):
     for activity in member.activities:
@@ -104,10 +131,10 @@ async def handle_presence_update(member):
 
 async def update_presence_data():
     await client.wait_until_ready()
-    print("Bot is ready to update presence data.")
+    logger.info("Bot is ready to update presence data.")
     
     while not client.is_closed():
-        print("Updating presence data...")
+        logger.info("Updating presence data...")
         for guild in client.guilds:
             for member in guild.members:
                 for activity in member.activities:
@@ -131,17 +158,26 @@ async def update_presence_data():
                                 'end_time': activity.end
                             }
                             
-                            print(f"Found Spotify activity for {member.name}:")
-                            print(f"Song Title: {activity.title}")
-                            print(f"Artist: {activity.artist}")
-                            print(f"Album: {activity.album}")
+                            logger.info(f"Found Spotify activity for {member.name}: {presence_data}")
 
-                            print(f"Inserting presence data for {member.name}.")
-                            collection.insert_one(presence_data)
+                            collection1.insert_one(presence_data)
+                            collection2.insert_one(presence_data)
                             last_track_ids[member.id] = current_track_id
 
-        print("Finished updating presence data. Waiting for next update...")
+        logger.info("Finished updating presence data. Waiting for next update...")
         await asyncio.sleep(10)  # Wait for 10 seconds before the next update
+
+def create_embed(title, top_songs):
+    embed = discord.Embed(title=title, color=discord.Color.blue())
+
+    for idx, song in enumerate(top_songs, 1):
+        embed.add_field(
+            name=f"{idx}. {song['_id']['title']} - {song['_id']['artist']}",
+            value=f"Track URL: {song['_id']['track_url']}\nAppearances: {song['count']}",
+            inline=False
+        )
+    
+    return embed
 
 # Start the bot
 client.run('YOUR_TOKEN_HERE')
