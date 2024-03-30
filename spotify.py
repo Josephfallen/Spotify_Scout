@@ -13,10 +13,15 @@ intents.presences = True
 
 client = commands.Bot(command_prefix='!', intents=intents)
 
-# MongoDB configuration
+# MongoDB configuration for primary Database
 mongo_client = pymongo.MongoClient("mongodb://localhost:27017/") # Change if connecting to a remote mongoDB server
 db = mongo_client["YOUR_DATABASE_HERE"] # Name this what ever you would like, the bot will auto make the database
 collection = db["YOUR_COLLECTION_HERE"] # Name this what ever you would like, the bot will auto make the collection
+
+# MongoDB configuration for Second Database (this is for a the webserver, remove if not wanted (Webserver WIP)
+mongo_client2 = pymongo.MongoClient("mongodb://localhost:27017/")  # Change if connecting to a remote MongoDB server
+db2 = mongo_client2["DATABASE_NAME_2"]  # Replace with your database name for collection2
+collection2 = db2["COLLECTION_NAME_2"]  # Replace with your collection name for collection2
 
 # Dictionary to store the last track_id for each member
 last_track_ids = {}
